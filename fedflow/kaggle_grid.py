@@ -5,7 +5,7 @@
     python -m fedflow.kaggle_grid push --dry-run               # show what would be pushed
     python -m fedflow.kaggle_grid queue --groups flat           # push as Kaggle session slots free up
     python -m fedflow.kaggle_grid status
-    python -m fedflow.kaggle_grid collect                      # download outputs, merge, summarise
+    python -m fedflow.kaggle_grid collect                      # download new outputs, merge, summarise (--redownload: all)
 
 Settings come from configs/fedflow/paper/kaggle.yaml. The Kaggle username is read from the
 local Kaggle login. Each kernel runs one (dataset, split, fold, model group) with all seeds.
@@ -240,7 +240,8 @@ def add_records(path: Path, seen: set, merged: list) -> None:
             merged.append(json.dumps(rec))
 
 
-def collect(datasets: List[str]) -> None:
+def collect(datasets: List[str], redownload: bool = False) -> None:
+    """Merge Kaggle outputs and local runs. Kernels already downloaded are reused unless `redownload`."""
     s = settings()
     user = username()
     listing = kaggle("kernels", "list", "--mine", "--search", s["kernel_prefix"], "--page-size", "100")
@@ -255,7 +256,9 @@ def collect(datasets: List[str]) -> None:
             if f"-{tag}-" not in ref:
                 continue
             dest = dl_root / ref.split("/")[1]
-            kaggle("kernels", "output", ref, "-p", str(dest), check=False)
+            if redownload or not any(dest.rglob("results.jsonl")):
+                print(f"downloading {ref}", flush=True)
+                kaggle("kernels", "output", ref, "-p", str(dest), check=False)
             for p in dest.rglob("results.jsonl"):
                 add_records(p, seen, merged)
         for local in sorted(out_dir.glob("local*/results.jsonl")):   # runs done on this machine
@@ -290,6 +293,7 @@ def main() -> None:
     sub.add_parser("status")
     c = sub.add_parser("collect")
     c.add_argument("--datasets", default=",".join(s["datasets"]))
+    c.add_argument("--redownload", action="store_true", help="download every kernel again, even ones already downloaded")
     a = ap.parse_args()
     if a.cmd == "upload-code":
         upload_code(a.message)
@@ -301,7 +305,7 @@ def main() -> None:
     elif a.cmd == "status":
         status(s["kernel_prefix"])
     else:
-        collect(a.datasets.split(","))
+        collect(a.datasets.split(","), a.redownload)
 
 
 if __name__ == "__main__":
