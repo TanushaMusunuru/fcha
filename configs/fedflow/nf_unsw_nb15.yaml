@@ -1,0 +1,12 @@
+extends: nf_ton_iot.yaml         # same NetFlow v1 schema; only the dataset identity changes
+
+dataset:
+  name: NF-UNSW-NB15
+  search:
+    - /kaggle/input/**/NF-UNSW-NB15.csv
+    - data/**/NF-UNSW-NB15.csv
+  drop_classes: []
+  min_class_count: 100           # classes with fewer flows cannot be split over 5 folds
+
+experiment:
+  results_dir: results/fedflow/nf_unsw_nb15

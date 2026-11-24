@@ -1,0 +1,31 @@
+# Kaggle grid launcher settings (python -m fedflow.kaggle_grid ...).
+# Your Kaggle username is read from your Kaggle login; it is not stored here.
+
+code_dataset_slug: fedflow-code          # private dataset holding fedflow/ and configs/
+kernel_prefix: ffp                       # kernels are named <prefix>-<tag>-<split>-f<fold>-<group> (Kaggle: <= 50 chars)
+private: true
+
+# Paper config -> public Kaggle dataset with the raw data (found via each config's search globs)
+# and a short tag used in kernel names.
+datasets:
+  nf_ton_iot_v2: {data: gyandeep2/nf-ton-iot-v2, tag: tonv2}
+  nf_cse_cic_ids2018_v2: {data: bhuvanshbehal/nf-cse-cic-ids2018-v2, tag: cic18}
+  ton_iot_network: {data: arnobbhowmik/ton-iot-network-dataset, tag: tonnet}
+
+# Each (dataset, split, fold) is run as one kernel per group.
+groups:
+  graph:                                  # attention / mean-aggregation models: GPU
+    gpu: true
+    models: [fcha, egraphsage_mean, host_mean_only, fcha_supcon, fcha_centralised]
+    sanity: true
+  flat:                                   # flow-only and tree models: CPU (no GPU quota)
+    gpu: false
+    models: [flow_mlp, random_forest, xgboost]
+    sanity: false
+
+splits: [signature, attacker]
+folds: [0, 1, 2, 3, 4]
+
+# Kaggle's limits on notebooks running at the same time (the queue command respects them).
+max_running: {cpu: 5, gpu: 2}
+poll_seconds: 120

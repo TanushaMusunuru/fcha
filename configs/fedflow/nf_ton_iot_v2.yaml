@@ -1,0 +1,22 @@
+extends: nf_ton_iot.yaml         # same roles and signature; v2 adds 31 NetFlow fields
+
+dataset:
+  name: NF-ToN-IoT-v2
+  search:
+    - /kaggle/input/**/NF-ToN-IoT-v2.parquet
+    - /kaggle/input/**/NF-ToN-IoT-v2.csv
+    - data/**/NF-ToN-IoT-v2.parquet
+    - data/**/NF-ToN-IoT-v2.csv
+  # 16.9M flows. class_cap keeps at most this many random flows per class (null = all flows).
+  # Rare classes (e.g. backdoor, 16,809 flows) are always kept whole.
+  class_cap: 150000
+  subsample_seed: 0
+
+features:
+  categorical_columns: [dst_port, protocol, L7_PROTO, ICMP_TYPE, ICMP_IPV4_TYPE, DNS_QUERY_TYPE, FTP_COMMAND_RET_CODE]
+  bitmask_columns: {TCP_FLAGS: 8, CLIENT_TCP_FLAGS: 8, SERVER_TCP_FLAGS: 8}
+  # A random DNS transaction id carries no behaviour, only a chance to memorise individual flows.
+  exclude_columns: [DNS_QUERY_ID]
+
+experiment:
+  results_dir: results/fedflow/nf_ton_iot_v2

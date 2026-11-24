@@ -1,0 +1,5 @@
+# Paper run: NF-ToN-IoT-v2 under the shared evaluation protocol.
+extends: [../nf_ton_iot_v2.yaml, protocol.yaml]
+
+experiment:
+  results_dir: results/paper/nf_ton_iot_v2

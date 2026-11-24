@@ -1,0 +1,49 @@
+extends: base.yaml
+
+# ToN-IoT "Train_Test_Network": the dataset authors' balanced evaluation subset (Zeek-style columns,
+# not NetFlow). 211,043 flows: 50,000 normal and 20,000 per attack class (MITM: 1,043).
+dataset:
+  name: ToN-IoT-Network
+  path: null
+  search:
+    - /kaggle/input/**/train_test_network.csv
+    - data/**/train_test_network.csv
+  columns:                       # role -> column name in this file
+    src_ip: src_ip
+    dst_ip: dst_ip
+    src_port: src_port
+    dst_port: dst_port
+    protocol: proto
+    in_bytes: src_bytes
+    out_bytes: dst_bytes
+    in_pkts: src_pkts
+    out_pkts: dst_pkts
+    duration: duration
+    label: type
+  drop_columns: [label]          # binary attack flag: a direct label leak
+  lowercase_labels: true
+  benign_class: normal
+  # Same 8 classes as the base paper and our NF-ToN-IoT runs. Set to [] to keep all 10.
+  drop_classes: [ransomware, mitm]
+  min_class_count: 0
+  class_cap: null                # already balanced
+
+features:
+  duration_to_seconds: 1.0       # durations here are already in seconds
+  port_columns: [src_port, dst_port]
+  categorical_columns: [dst_port, protocol, service, conn_state, dns_AA, dns_RD, dns_RA, dns_rejected,
+                        ssl_version, ssl_cipher, ssl_resumed, ssl_established, http_trans_depth,
+                        http_method, http_version, http_orig_mime_types, http_resp_mime_types,
+                        weird_name, weird_notice]
+  bitmask_columns: {}
+  # Free-text fields identify individual requests or hosts (URIs, user agents, certificate
+  # subjects, DNS names), so a model could memorise them instead of learning behaviour.
+  exclude_columns: [http_uri, http_user_agent, dns_query, ssl_subject, ssl_issuer, weird_addl]
+
+signature:
+  columns: [dst_port, protocol, in_bytes, out_bytes, in_pkts, out_pkts, duration]
+  binning: log2
+  binned_columns: [in_bytes, out_bytes, in_pkts, out_pkts, duration]
+
+experiment:
+  results_dir: results/fedflow/ton_iot_network

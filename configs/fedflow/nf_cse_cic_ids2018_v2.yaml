@@ -1,0 +1,32 @@
+extends: nf_ton_iot_v2.yaml      # same NetFlow v2 schema, features and signature; only the dataset changes
+
+dataset:
+  name: NF-CSE-CIC-IDS2018-v2
+  search:
+    - /kaggle/input/**/NF-CSE-CIC-IDS2018-v2.parquet
+    - /kaggle/input/**/NF-CSE-CIC-IDS2018-v2.csv
+    - data/**/NF-CSE-CIC-IDS2018-v2.parquet
+    - data/**/NF-CSE-CIC-IDS2018-v2.csv
+  drop_classes: []
+  min_class_count: 100
+  # The file has 15 fine-grained labels; merge them into the 7 attack families used in the
+  # NetFlow-v2 dataset paper. Labels not listed keep their own name (e.g. Benign, Bot).
+  class_map:
+    DDOS attack-HOIC: ddos
+    DDoS attacks-LOIC-HTTP: ddos
+    DDOS attack-LOIC-UDP: ddos
+    DoS attacks-Hulk: dos
+    DoS attacks-GoldenEye: dos
+    DoS attacks-SlowHTTPTest: dos
+    DoS attacks-Slowloris: dos
+    SSH-Bruteforce: bruteforce
+    FTP-BruteForce: bruteforce
+    Brute Force -Web: web
+    Brute Force -XSS: web
+    SQL Injection: web
+    Infilteration: infiltration       # spelling as in the original dataset
+  # 18.9M flows, 88% benign. Cap applies per family after merging; small families stay whole.
+  class_cap: 150000
+
+experiment:
+  results_dir: results/fedflow/nf_cse_cic_ids2018_v2

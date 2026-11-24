@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+
+# Local Data and Logs
+data/
+results/
+scratch/
+test_data/
+*.log
+
+# Local automation scripts with credentials/tokens
+push_*.py
+fetch_*.py
+check_status.py
+# Large binaries and archives
+*.exe
+*.zip

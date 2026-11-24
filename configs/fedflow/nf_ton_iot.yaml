@@ -1,0 +1,45 @@
+extends: base.yaml
+
+dataset:
+  name: NF-ToN-IoT
+  path: null                     # set a path, or rely on the search globs below
+  search:
+    - /kaggle/input/**/NF-ToN-IoT.csv
+    - /kaggle/input/**/NF-ToN-IoT.parquet
+    - data/**/NF-ToN-IoT.csv
+    - data/**/NF-ToN-IoT.parquet
+  columns:                       # role -> column name in the CSV (NetFlow v1 schema)
+    src_ip: IPV4_SRC_ADDR
+    dst_ip: IPV4_DST_ADDR
+    src_port: L4_SRC_PORT
+    dst_port: L4_DST_PORT
+    protocol: PROTOCOL
+    in_bytes: IN_BYTES
+    out_bytes: OUT_BYTES
+    in_pkts: IN_PKTS
+    out_pkts: OUT_PKTS
+    duration: FLOW_DURATION_MILLISECONDS
+    label: Attack
+  drop_columns: [Label]          # binary attack flag: a direct label leak
+  lowercase_labels: true
+  benign_class: benign
+  # The paper studies 8 classes; set to [] to keep every class in the file.
+  drop_classes: [ransomware, mitm]
+  min_class_count: 0
+  max_rows: null                 # e.g. 200000 for a quick stratified subsample
+
+features:
+  port_columns: [src_port, dst_port]
+  categorical_columns: [dst_port, protocol, L7_PROTO]
+  bitmask_columns: {TCP_FLAGS: 8}
+
+signature:
+  # Grouping key for the leakage-controlled split. The ephemeral source port is left out (it makes
+  # almost every flow unique and defeats grouping); volumes are log2-binned so near-duplicates
+  # (e.g. the same flow 1 ms longer) also land on the same side of the split.
+  columns: [dst_port, protocol, in_bytes, out_bytes, in_pkts, out_pkts, duration]
+  binning: log2
+  binned_columns: [in_bytes, out_bytes, in_pkts, out_pkts, duration]
+
+experiment:
+  results_dir: results/fedflow/nf_ton_iot

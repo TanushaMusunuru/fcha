@@ -1,0 +1,120 @@
+# Shared defaults for all FedFlow experiments. Dataset configs extend this file
+# (`extends: base.yaml`) and only add what is specific to the dataset.
+
+features:
+  log_transform: true            # sign(x) * log1p(|x|) on numeric columns
+  derived: true                  # asymmetry, bytes/packet, byte rate (needs the column roles)
+  duration_to_seconds: 0.001     # NetFlow v1 durations are in milliseconds
+  port_bounds: [1024, 49152]     # well-known / registered / ephemeral buckets
+  categorical_top_k: 16          # vocabulary size learned from training data only
+  leak_scan: error               # error | warn | off: reject columns that restate the label
+  exclude_columns: []
+
+federated:
+  num_clients: 5
+  rounds: 30
+  local_epochs: 1                # full passes over each client's local training flows
+  max_steps_per_epoch: 600       # caps the steps per local epoch (null = full epoch); keeps runs bounded
+  batch_size: 512
+  lr: 0.0003                     # 1e-3 made validation swing 55-69% between rounds on NF-ToN-IoT
+  weight_decay: 0.0001
+  grad_clip: 5.0
+  client_fraction: 1.0
+  fedprox_mu: 0.0                # > 0 switches FedAvg to FedProx
+  balanced_sampling: false
+  val_fraction: 0.1              # per-client validation hold-out, grouped by flow signature
+  early_stopping_patience: 10
+  eval_batch_size: 8192
+
+partitions:
+  - {name: iid, type: iid}
+  - {name: dirichlet_a0.5, type: dirichlet, alpha: 0.5, min_client_size: 200}
+  - {name: host, type: host}
+
+splits:
+  - {type: signature, n_folds: 5, seed: 42}
+  # Unseen attackers (leave-attacker-out): attacker hosts are found from the data and spread over
+  # the folds. type: host (plain K-fold over all source hosts) is still available, but on benchmarks
+  # with few attacker machines most of its test folds contain no attack.
+  # host_mode: endpoints also removes every training flow touching any test host (victims too).
+  - {type: attacker, host_mode: source, n_folds: 5, seed: 42, min_attack_flows: 50, min_class_support: 50}
+
+# Every neural model uses the same loss so they differ only in the aggregator.
+_loss: &loss {class_weights: sqrt_inverse, focal_gamma: 0.0, supcon_weight: 0.0}
+
+models:
+  fcha:                          # proposed: flow-conditioned host attention
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: *loss
+  fcha_supcon:                   # proposed + supervised contrastive term
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: {class_weights: sqrt_inverse, focal_gamma: 0.0, supcon_weight: 0.1, supcon_temperature: 0.1}
+  fcha_centralised:              # same model, one client: the cost of federation
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: *loss
+    federated: {num_clients: 1}
+  egraphsage_mean:               # E-GraphSAGE-style: host mean context + own flow features
+    kind: federated
+    aggregator: mean
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+  host_mean_only:                # host averages only (the aggregation that hid Backdoor)
+    kind: federated
+    aggregator: mean
+    use_self: false
+    neighbors: 16
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+  flow_mlp:                      # true edge-only: the flow's own features, no graph
+    kind: federated
+    aggregator: none
+    use_self: true
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+  random_forest:                 # centralised reference (sees pooled training data)
+    kind: classical
+    estimator: random_forest
+    params: {n_estimators: 200, max_depth: null}
+  hist_gradient_boosting:
+    kind: classical
+    estimator: hist_gradient_boosting
+    params: {max_iter: 300}
+  # xgboost:                     # needs `pip install xgboost`
+  #   kind: classical
+  #   estimator: xgboost
+
+experiment:
+  seeds: [42, 43, 44]
+  folds: null                    # null = all folds
+  device: auto
+  eval_samples: 1                # neighbour-sampling draws averaged at test time
+  attention_analysis: true
+  sanity_permuted_labels: true   # extra run trained on shuffled labels; must score ~chance
+  sanity_model: fcha
+
+summary:
+  reference_model: fcha
+  reference_partition: iid

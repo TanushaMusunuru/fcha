@@ -1,0 +1,5 @@
+# Paper run: NF-CSE-CIC-IDS2018-v2 under the shared evaluation protocol.
+extends: [../nf_cse_cic_ids2018_v2.yaml, protocol.yaml]
+
+experiment:
+  results_dir: results/paper/nf_cse_cic_ids2018_v2

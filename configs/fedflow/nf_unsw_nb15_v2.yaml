@@ -1,0 +1,16 @@
+extends: nf_ton_iot_v2.yaml      # same NetFlow v2 schema, features and signature; only the dataset changes
+
+dataset:
+  name: NF-UNSW-NB15-v2
+  search:
+    - /kaggle/input/**/NF-UNSW-NB15-v2.parquet
+    - /kaggle/input/**/NF-UNSW-NB15-v2.csv
+    - data/**/NF-UNSW-NB15-v2.parquet
+    - data/**/NF-UNSW-NB15-v2.csv
+  drop_classes: []               # keep all 10 classes
+  min_class_count: 100           # every class here has more (Worms: 164)
+  # 2.39M flows, 96% benign. The cap only thins Benign; every attack class is kept whole.
+  class_cap: 150000
+
+experiment:
+  results_dir: results/fedflow/nf_unsw_nb15_v2

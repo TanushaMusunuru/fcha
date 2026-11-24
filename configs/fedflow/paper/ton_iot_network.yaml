@@ -1,0 +1,5 @@
+# Paper run: ToN-IoT Train_Test_Network under the shared evaluation protocol.
+extends: [../ton_iot_network.yaml, protocol.yaml]
+
+experiment:
+  results_dir: results/paper/ton_iot_network

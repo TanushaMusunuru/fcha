@@ -1,0 +1,107 @@
+# Evaluation protocol shared by every dataset in the paper. Each paper config lists the dataset
+# config first and this file second, so these settings win.
+
+dataset:
+  # At most this many copies of each identical flow (same signature, exact values) are kept.
+  # Without it, mass-repeated attack flows form groups that cannot be split across folds.
+  max_duplicates: 10
+
+signature:
+  binning: none                  # exact values: groups are true duplicates
+
+splits:
+  - {type: signature, n_folds: 5, seed: 42}                    # unseen flow patterns
+  # Unseen attackers: leave-attacker-out. A plain K-fold over source hosts is not used: these
+  # benchmarks have only 4-10 attacker machines, so most host folds held no attack at all.
+  - {type: attacker, host_mode: source, n_folds: 5, seed: 42, min_attack_flows: 50, min_class_support: 50}
+
+partitions:
+  - {name: iid, type: iid}
+  - {name: dirichlet_a0.5, type: dirichlet, alpha: 0.5, min_client_size: 200}   # label-skewed clients
+
+_loss: &loss {class_weights: sqrt_inverse, focal_gamma: 0.0, supcon_weight: 0.0}
+
+models:
+  _replace: true                 # exactly these models, not merged with the dataset config's list
+  # --- proposed ---
+  fcha:
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: *loss
+  # --- graph baselines (same code path, different aggregation) ---
+  egraphsage_mean:               # E-GraphSAGE style: mean host context + own flow features
+    kind: federated
+    aggregator: mean
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+    partitions: [iid]
+  host_mean_only:                # host averages only: the aggregation of FedGATSage-style models
+    kind: federated
+    aggregator: mean
+    use_self: false
+    neighbors: 16
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+    partitions: [iid]
+  # --- flow-only baselines ---
+  flow_mlp:
+    kind: federated
+    aggregator: none
+    use_self: true
+    hidden: 128
+    dropout: 0.1
+    loss: *loss
+  random_forest:                 # centralised reference
+    kind: classical
+    estimator: random_forest
+    params: {n_estimators: 200, max_depth: null}
+  xgboost:                       # centralised reference
+    kind: classical
+    estimator: xgboost
+    params: {n_estimators: 300, max_depth: 8, learning_rate: 0.1}
+  # --- ablations (signature split, IID only) ---
+  fcha_supcon:
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: {class_weights: sqrt_inverse, focal_gamma: 0.0, supcon_weight: 0.1, supcon_temperature: 0.1}
+    splits: [signature]
+    partitions: [iid]
+  fcha_centralised:
+    kind: federated
+    aggregator: attention
+    use_self: true
+    neighbors: 16
+    hidden: 128
+    heads: 4
+    dropout: 0.1
+    loss: *loss
+    federated: {num_clients: 1}
+    splits: [signature]
+
+experiment:
+  seeds: [42, 43, 44]
+  folds: null
+  device: auto
+  eval_samples: 1
+  attention_analysis: true
+  sanity_permuted_labels: true
+  sanity_seeds: [42]             # one shuffled-label run per split and fold is enough
+  sanity_model: fcha
+
+summary:
+  reference_model: fcha
+  reference_partition: iid
