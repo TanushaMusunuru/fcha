@@ -1,8 +1,9 @@
 # FedFlow / FCHA: results
 
-*Status: 24 Nov 2026, 21:45 IST. Paper protocol (`configs/fedflow/paper/protocol.yaml`).
-Numbers are mean ± sample SD over (fold × seed) on the test folds. Runs still in progress are
-marked; everything here is regenerated from `results/paper/*/results.jsonl`.
+*Status: 25 Nov 2026, final. Every model has 5 folds × 3 seeds on both splits of all three datasets.
+Paper protocol (`configs/fedflow/paper/protocol.yaml`). Numbers are mean ± sample SD over
+(fold × seed) on the test folds, regenerated from `results/paper/*/results.jsonl`; the full report
+with Holm-corrected Wilcoxon tests is in `paper_results/REPORT.md`.
 The earlier single-fold exploratory results (before duplicate capping) are kept in
 `RESULTS_exploratory_fold0.md`; they are superseded and should not be reported.*
 
@@ -103,43 +104,59 @@ close to FCHA: here each attacker machine runs one attack, so host context alone
 
 ## 3. Unseen attackers: leave-attacker-out split
 
-### 3.1 ToN-IoT-Network (all 5 folds; baselines 3 seeds, graph models 3 seeds on F0 and F2, seed 42 elsewhere)
-
 Each fold holds out different attacker machines; the models never see any flow they sent.
-Balanced accuracy over supported classes (%), averaged over the seeds available per fold; the last
-column is the mean of the fold means.
+Balanced accuracy over supported classes (%), mean of the 3 seeds per fold; the last column is the
+mean ± SD over all 15 (fold, seed) runs. p = paired Wilcoxon vs FCHA (IID), Holm-corrected, 15 pairs.
 
-| Model | F0 (.30) | F1 (.31) | F2 (.32) | F3 (.193) | F4 (minor) | Mean |
-|---|---|---|---|---|---|---|
-| **FCHA** (IID) | **91.6** | 93.3 | **90.6** | 41.7 | **74.2** | **78.3** |
-| **FCHA** (Dir 0.5) | **92.0** | 92.4 | 88.2 | 44.2 | **75.0** | **78.3** |
-| E-GraphSAGE-mean | 85.6 | 94.2 | 81.8 | 36.2 | 73.8 | 74.3 |
-| Host-mean (FedGATSage-style) | 49.5 | 59.9 | 61.9 | 31.0 | 52.5 | 51.0 |
-| Flow-MLP (IID) | 86.1 | 94.0 | 70.8 | 49.3 | 69.7 | 74.0 |
-| Flow-MLP (Dir 0.5) | 86.3 | 94.4 | 69.7 | 49.4 | 71.8 | 74.3 |
-| Random Forest † | 80.8 | **96.2** | 66.0 | 42.4 | 71.4 | 71.4 |
-| XGBoost † | **94.8** | **96.5** | 67.7 | 28.2 | 72.5 | 71.9 |
-| Shuffled-label check | 16.7 | 16.7 | 33.2 | 3.2 | 12.6 | 16.5 (chance) |
+### 3.1 ToN-IoT-Network (complete)
 
-FCHA beats E-GraphSAGE-mean on 4 of 5 folds (+4.0 on the mean) and every flow-only model by 4–7
-points; its largest gain is F2 (XSS from an unseen machine: 90.6 vs 70.8 for Flow-MLP). F3 (an
-unseen Backdoor machine, with only 143 Backdoor training flows from elsewhere) defeats every model.
-With seed 42 alone (5 matched folds) the paired Wilcoxon p-value cannot go below 0.0625, so the
-remaining seeds are needed for a significance claim.
+| Model | F0 (.30) | F1 (.31) | F2 (.32) | F3 (.193) | F4 (minor) | Mean ± SD | FPR | p |
+|---|---|---|---|---|---|---|---|---|
+| **FCHA** (IID) | 91.6 | 92.3 | **90.6** | 42.5 | 74.3 | **78.3 ± 20.2** | **6.0** | – |
+| **FCHA** (Dir 0.5) | 92.0 | 93.9 | 88.2 | 45.7 | 74.6 | 78.9 ± 19.3 | – | – |
+| E-GraphSAGE-mean | 85.6 | 94.5 | 81.8 | 36.0 | 74.4 | 74.5 ± 21.4 | 11.2 | 0.43 |
+| Host-mean (FedGATSage-style) | 49.5 | 59.7 | 61.9 | 32.4 | 56.5 | 52.0 ± 11.6 | 20.1 | <0.001 |
+| Flow-MLP (IID) | 86.1 | 94.0 | 70.8 | 49.3 | 69.7 | 74.0 ± 16.2 | 17.0 | 0.43 |
+| Random Forest † | 80.8 | 96.2 | 66.0 | 42.4 | 71.4 | 71.4 ± 19.0 | 16.5 | 0.43 |
+| XGBoost † | **94.8** | **96.5** | 67.7 | 28.2 | 72.5 | 71.9 ± 25.6 | 22.1 | 0.43 |
 
-### 3.2 Other datasets (partial)
+### 3.2 NF-CSE-CIC-IDS2018-v2 (complete)
 
-| Dataset | Model | Folds done | Bal. acc (supported) |
-|---|---|---|---|
-| NF-ToN-IoT-v2 | **FCHA** IID / Dir(0.5) | F1 × 3 seeds | **80.2** / **81.6** |
-| NF-ToN-IoT-v2 | E-GraphSAGE-mean | F1 × 3 seeds | 76.1 |
-| NF-ToN-IoT-v2 | Host-mean | F1 × 3 seeds | 41.8 |
-| NF-ToN-IoT-v2 | Flow-MLP / RF † / XGBoost † | F1 × 3 seeds | 79.0 / 75.9 / 76.3 |
-| NF-ToN-IoT-v2 | Flow-MLP / RF † / XGBoost † | all 5 × 3 seeds | 73.4 / 80.3 / 76.2 |
-| CIC-IDS2018-v2 | Flow-MLP / RF † / XGBoost † | all 5 × 3 seeds | 68.8 / 73.3 / 73.3 |
-| CIC-IDS2018-v2 | graph models | – | not run |
+| Model | F0 | F1 | F2 | F3 | F4 | Mean ± SD | FPR | p |
+|---|---|---|---|---|---|---|---|---|
+| **FCHA** (IID) | 72.5 | 73.6 | 63.0 | 83.4 | **76.4** | **73.8 ± 8.5** | **4.9** | – |
+| **FCHA** (Dir 0.5) | 72.8 | 73.3 | 57.1 | 84.0 | 73.6 | 72.1 ± 10.3 | – | – |
+| E-GraphSAGE-mean | 65.6 | **74.6** | 63.3 | 78.2 | 71.0 | 70.5 ± 8.8 | 5.0 | 0.32 |
+| Host-mean (FedGATSage-style) | 60.9 | 55.8 | 45.2 | 68.4 | 55.5 | 57.2 ± 10.9 | 6.4 | <0.001 |
+| Flow-MLP (IID) | 66.1 | 64.8 | 60.9 | 81.3 | 71.0 | 68.8 ± 7.5 | 13.8 | 0.017 |
+| Random Forest † | **75.0** | 68.1 | 60.8 | **89.3** | 73.2 | 73.3 ± 9.7 | 10.8 | 0.34 |
+| XGBoost † | 62.0 | 66.0 | **77.9** | 87.8 | 72.7 | 73.3 ± 9.4 | 6.3 | 0.76 |
 
-**What each fold tests** (test flows, with training flows of the same class from other machines in brackets):
+### 3.3 NF-ToN-IoT-v2 (complete)
+
+| Model | F0 | F1 | F2 | F3 | F4 | Mean ± SD | FPR | p |
+|---|---|---|---|---|---|---|---|---|
+| **FCHA** (IID) | 86.0 | 80.3 | 47.0 | 74.6 | 69.0 | 71.4 ± 14.1 | 11.8 | – |
+| **FCHA** (Dir 0.5) | 84.8 | **81.6** | 52.3 | 76.5 | 70.1 | 73.1 ± 12.9 | – | – |
+| E-GraphSAGE-mean | 84.8 | 76.1 | 48.9 | 79.2 | 74.4 | 72.7 ± 13.1 | 19.1 | 0.76 |
+| Host-mean (FedGATSage-style) | 45.4 | 41.8 | 28.7 | 49.3 | 40.2 | 41.1 ± 7.3 | 64.2 | <0.001 |
+| Flow-MLP (IID) | **90.0** | 79.0 | 69.2 | 79.3 | 49.2 | 73.4 ± 14.3 | 16.3 | 0.76 |
+| Random Forest † | 87.8 | 75.9 | **72.0** | **79.7** | **86.4** | **80.3 ± 6.2** | **10.5** | **0.041** |
+| XGBoost † | 89.1 | 76.3 | 71.1 | 79.4 | 65.0 | 76.2 ± 8.4 | 12.1 | 0.76 |
+
+Shuffled-label FCHA scores chance on every fold of every dataset.
+
+**Reading the unseen-attacker results.** FCHA has the highest mean on ToN-IoT-Network (+3.8 over
+E-GraphSAGE-mean, +6.4 over XGBoost) and CIC-IDS2018-v2 (+0.5 over the trees), and the lowest
+false-positive rate on both (6.0% vs 11–22%; 4.9% vs 5.0–13.8%). On NF-ToN-IoT-v2 Random Forest
+is best (80.3 vs 71.4, the only significant difference against FCHA at p = 0.041); FCHA's loss
+comes from fold F2 (47.0, Backdoor/Password/Scanning attackers unseen in training). Apart from
+host-mean (always significantly worse) and Flow-MLP on CIC (p = 0.017), no difference to FCHA is
+significant: fold-to-fold variance (SD 8–26 points) dominates. The honest summary: FCHA wins
+clearly when attackers are known (§2), and on unseen attackers it is competitive with centralised
+trees while raising markedly fewer false alarms on two of three datasets.
+
+**What each ToN-IoT-Network fold tests** (test flows, with training flows of the same class from other machines in brackets):
 
 | Fold | Held-out attacker(s) | Attack classes tested |
 |---|---|---|
@@ -208,12 +225,15 @@ remaining seeds are needed for a significance claim.
 
 1. **FCHA is the best federated model on all three datasets** (signature split): 94.2 (ToN-v2),
    99.1 (ToN-Net), 95.6 (CIC-IDS2018), and it beats the centralised trees on all three
-   (XGBoost 91.4 / 98.6 / 83.9). On CIC-IDS2018 the gap to every flow-only model is 11–12 points,
-   from Infiltration (98.6 vs ≤ 70) and Web (80.4 vs ≤ 31) recall.
-2. **Attention beats mean aggregation where it matters.** On the signature split they are close
-   (94.2 vs 94.1; 99.1 vs 99.1; 95.6 vs 94.5, with Web recall 80.4 vs 72.8 on CIC). On unseen
-   attackers (ToN-IoT-Network) FCHA leads on 4 of 5 folds, 78.3 vs 74.3, with the biggest gains on
-   F0 (DoS recall 91 vs 47, seed 42) and F2. NF-ToN-IoT-v2 F1 agrees (80.2 vs 76.1).
+   (XGBoost 91.4 / 98.6 / 83.9; all p < 0.001). On CIC-IDS2018 the gap to every flow-only model is
+   11–12 points, from Infiltration (98.6 vs ≤ 70) and Web (80.4 vs ≤ 31) recall.
+2. **Attention vs mean aggregation.** On the signature split they are close (94.2 vs 94.1, n.s.;
+   99.1 vs 99.1; 95.6 vs 94.5, p < 0.001, with Web recall 80.4 vs 72.8 on CIC). On unseen
+   attackers FCHA is ahead on ToN-IoT-Network (78.3 vs 74.5) and CIC (73.8 vs 70.5) and behind on
+   NF-ToN-IoT-v2 (71.4 vs 72.7); none of these differences is significant.
+2a. **Unseen attackers (§3) are much harder for every model.** FCHA has the best mean on two of
+   three datasets and the lowest false-positive rate on those two, but Random Forest wins
+   NF-ToN-IoT-v2 (80.3 vs 71.4, p = 0.041).
 3. **Host-level averaging fails when hosts mix traffic.** Host-mean is 16–22 points below on the
    ToN datasets (78.0, 77.2), flags 31% of benign flows on NF-ToN-IoT-v2, and collapses to 51.0 on
    unseen attackers. On CIC-IDS2018, where each attacker machine runs a single attack, it is close
@@ -313,17 +333,21 @@ settings; MITM and Ransomware are dropped without comment (we drop them too, for
 | Dataset | Split | Complete | Not yet run |
 |---|---|---|---|
 | NF-ToN-IoT-v2 | signature | **all models, 5 folds × 3 seeds** | – |
-| NF-ToN-IoT-v2 | attacker | baselines 5 folds × 3 seeds; graph models F1 × 3 seeds | graph models F0, F2–F4 |
+| NF-ToN-IoT-v2 | attacker | **all models, 5 folds × 3 seeds** | – |
 | ToN-IoT-Network | signature | **all models, 5 folds × 3 seeds** | – |
-| ToN-IoT-Network | attacker | baselines 5 × 3; graph models 5 folds (seed 42), F0 and F2 × 3 seeds | graph models F1, F3, F4 seeds 43–44 |
+| ToN-IoT-Network | attacker | **all models, 5 folds × 3 seeds** | – |
 | CIC-IDS2018-v2 | signature | **all models, 5 folds × 3 seeds** | – |
-| CIC-IDS2018-v2 | attacker | baselines 5 × 3 | graph models |
+| CIC-IDS2018-v2 | attacker | **all models, 5 folds × 3 seeds** | – |
+
+FCHA + SupCon and FCHA centralised are run on the signature split only (ablations).
 
 ## 9. Caveats
 
-1. The unseen-attacker split is incomplete for the graph models (§8); significance tests on it need
-   the remaining seeds.
-2. Significance tests (Holm-corrected Wilcoxon) are not in this file yet: `py -3 -m fedflow.paper_report`.
+1. On unseen attackers the fold-to-fold spread (SD 8–26 points) is larger than most differences
+   between models; only host-mean (all datasets), Flow-MLP (CIC) and Random Forest (NF-ToN-IoT-v2,
+   better than FCHA) differ significantly from FCHA.
+2. Significance tests: Holm-corrected paired Wilcoxon over 15 (fold, seed) pairs, in
+   `paper_results/REPORT.md`.
 3. NF-ToN-IoT-v2 and ToN-IoT-Network come from the same testbed (same attacker machines);
    CIC-IDS2018-v2 is the only independent network.
 4. Clients are simulated partitions of one dataset.
@@ -335,6 +359,7 @@ settings; MITM and Ransomware are dropped without comment (we drop them too, for
 
 | What | Path |
 |---|---|
+| Final report, LaTeX tables, figures, merged results (committed) | `paper_results/` |
 | Merged per-dataset results (Kaggle + local) | `results/paper/<dataset>/results.jsonl` (rebuild with `py -3 -m fedflow.kaggle_grid collect`) |
 | Laptop runs | `results/paper/<dataset>/local*/results.jsonl` |
 | Kaggle notebook outputs | `results/paper/<dataset>/kaggle/<notebook>/` |

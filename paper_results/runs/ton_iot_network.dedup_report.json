@@ -1,0 +1,39 @@
+{
+  "max_copies": 10,
+  "flows_before": 190000,
+  "flows_after": 130248,
+  "per_class": {
+    "backdoor": {
+      "before": 20000,
+      "after": 6960
+    },
+    "ddos": {
+      "before": 20000,
+      "after": 16862
+    },
+    "dos": {
+      "before": 20000,
+      "after": 19874
+    },
+    "injection": {
+      "before": 20000,
+      "after": 19894
+    },
+    "normal": {
+      "before": 50000,
+      "after": 27341
+    },
+    "password": {
+      "before": 20000,
+      "after": 17733
+    },
+    "scanning": {
+      "before": 20000,
+      "after": 12772
+    },
+    "xss": {
+      "before": 20000,
+      "after": 8812
+    }
+  }
+}
