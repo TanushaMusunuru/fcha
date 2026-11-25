@@ -184,6 +184,31 @@ def fig_arch():
     fig.savefig(OUT / "fig_arch.png", dpi=200, bbox_inches="tight")
 
 
+def fig_confusion():
+    """Row-normalised confusion matrix of FCHA (IID), NF-CSE-CIC-IDS2018-v2, signature split, summed over runs."""
+    import numpy as np
+    R = select(load("nf_cse_cic_ids2018_v2"), "signature", "fcha", "iid")
+    cm = sum(np.asarray(r["metrics"]["confusion_matrix"], dtype=float) for r in R)
+    cm = 100 * cm / cm.sum(1, keepdims=True).clip(min=1)
+    names = ["Benign", "Bot", "Brute force", "DDoS", "DoS", "Infiltration", "Web"]
+    fig, ax = plt.subplots(figsize=(3.4, 2.9))
+    im = ax.imshow(cm, cmap="Blues", vmin=0, vmax=100)
+    for i in range(len(names)):
+        for j in range(len(names)):
+            if cm[i, j] >= 0.5:
+                ax.text(j, i, f"{cm[i, j]:.0f}", ha="center", va="center", fontsize=6.5,
+                        color="white" if cm[i, j] > 50 else "black")
+    ax.set_xticks(range(len(names))); ax.set_xticklabels(names, rotation=40, ha="right")
+    ax.set_yticks(range(len(names))); ax.set_yticklabels(names)
+    ax.set_xlabel("Predicted class"); ax.set_ylabel("True class")
+    for s in ax.spines.values():
+        s.set_visible(True)
+    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03); cb.set_label("% of true class", fontsize=7)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig_confusion_cic.pdf", bbox_inches="tight")
+    fig.savefig(OUT / "fig_confusion_cic.png", dpi=200, bbox_inches="tight")
+
+
 if __name__ == "__main__":
-    fig_arch(); fig_main(); fig_attacker()
+    fig_arch(); fig_main(); fig_attacker(); fig_confusion()
     print("figures written to", OUT)

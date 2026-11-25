@@ -142,6 +142,7 @@ NF-ToN-IoT-v2 and ToN-IoT-Network come from the same testbed and share attacker 
 \caption{Datasets after duplicate capping (at most 10 copies of each identical flow).}
 \label{tab:datasets}
 \setlength{\tabcolsep}{4pt}
+\footnotesize
 \begin{tabular}{@{}lrrcc@{}}
 \toprule
 Dataset & Flows read & After cap & Classes & Features \\
@@ -284,7 +285,7 @@ Benign & 95.4 & 95.5 & 93.3 & \best{96.5} & 95.2 \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.92\columnwidth]{figures/fig_confusion_cic.png}
+\includegraphics[width=0.92\columnwidth]{figures/fig_confusion_cic.pdf}
 \caption{Row-normalised confusion matrix of FCHA on NF-CSE-CIC-IDS2018-v2, signature split, aggregated over 15 runs.}
 \label{fig:confusion}
 \end{figure}
@@ -345,7 +346,7 @@ Table~\ref{tab:ablation} isolates the effect of federation and of the auxiliary 
 
 \begin{table}[t]
 \centering
-\caption{Federation cost and ablations, signature split: balanced accuracy (\%), mean over 15 runs.}
+\caption{Federation cost and ablations, signature split: balanced accuracy (\%), mean over 15 runs. All variants are federated over 5 clients except the centralised one ($\dagger$).}
 \label{tab:ablation}
 \setlength{\tabcolsep}{3.5pt}
 \footnotesize
@@ -353,13 +354,13 @@ Table~\ref{tab:ablation} isolates the effect of federation and of the auxiliary 
 \toprule
 Variant & NF-ToN-v2 & ToN-Net & NF-CIC-v2 \\
 \midrule
-FCHA, federated, IID & 94.2 & 99.1 & 95.6 \\
-FCHA, federated, Dirichlet(0.5) & 93.1 & 99.0 & 93.6 \\
+FCHA, IID & 94.2 & 99.1 & 95.6 \\
+FCHA, Dirichlet(0.5) & 93.1 & 99.0 & 93.6 \\
 FCHA, centralised$\dagger$ & 94.5 & 99.2 & 95.6 \\
-FCHA + SupCon, federated, IID & 94.0 & 99.1 & 95.6 \\
+FCHA + SupCon, IID & 94.0 & 99.1 & 95.6 \\
 \midrule
-Flow-MLP, federated, IID & 90.1 & 97.8 & 83.5 \\
-Flow-MLP, federated, Dirichlet(0.5) & 89.6 & 97.6 & 83.0 \\
+Flow-MLP, IID & 90.1 & 97.8 & 83.5 \\
+Flow-MLP, Dirichlet(0.5) & 89.6 & 97.6 & 83.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -397,7 +398,7 @@ Over a complete run (about 26--28 rounds with 5 clients), FCHA exchanges 199--20
 
 \emph{False alarms.} On two of three datasets FCHA attains its unseen-attacker accuracy with the lowest false-positive rate of all models: 6.0\% against 16.5--22.1\% for the tree ensembles on ToN-IoT-Network, and 4.9\% against 6.3--10.8\% on NF-CSE-CIC-IDS2018-v2. In operational settings, where analysts triage every alert, a detector with similar detection and fewer false alarms is preferable. On NF-ToN-IoT-v2 this advantage does not hold (11.8\% vs.\ 10.5\% for the random forest).
 
-\emph{Evaluation practice.} Two observations generalise beyond our model. First, duplicate capping and signature grouping change conclusions: before capping, one of our test folds was two-thirds Bot traffic, and per-class results were unstable. Second, the drop of 20--25 points between the signature and the leave-attacker-out splits shows that results on random or signature splits do not indicate how a detector will behave against new attacking machines. We recommend that federated NIDS papers report both.
+\emph{Evaluation practice.} Two observations generalise beyond our model. First, duplicate capping and signature grouping change conclusions: before capping, one of our test folds was two-thirds Bot traffic, and per-class results were unstable. Second, the drop of 10--27 points (21--23 for FCHA) between the signature and the leave-attacker-out splits shows that results on random or signature splits do not indicate how a detector will behave against new attacking machines. We recommend that federated NIDS papers report both.
 
 \emph{Limitations.} (i) NF-ToN-IoT-v2 and ToN-IoT-Network come from the same testbed, so the study covers two independent networks; adding further testbeds would strengthen the generality of the conclusions. (ii) Clients are simulated partitions of one dataset; real deployments would have different hosts and traffic mixes per site. (iii) We use FedAvg without differential privacy or secure aggregation; the exchanged weights may leak information, and the accuracy cost of such mechanisms for FCHA remains to be measured. (iv) The test graph is built from a batch of test traffic; a streaming deployment would need windowed graphs, for which temporal graph models~\cite{rossi2020tgn} are a natural direction. (v) The tree ensembles are centralised references; federated tree learning would make the comparison fully symmetric.
 
