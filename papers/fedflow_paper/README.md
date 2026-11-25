@@ -1,0 +1,30 @@
+# FedFlow / FCHA journal paper
+
+`main.tex` is the full paper (IEEEtran journal class, two columns). `figures/` holds the figures;
+`make_figures.py` regenerates `fig_arch`, `fig_main` and `fig_attacker` from
+`paper_results/runs/*.results.jsonl`. `fig_confusion_cic.png` is copied from `paper_results/figures/`.
+
+## Compile
+
+Overleaf: upload `fedflow_paper_overleaf.zip` (New Project → Upload Project), compiler pdfLaTeX.
+Locally: `pdflatex main.tex` twice (the bibliography is inline, no BibTeX run needed).
+
+## Before submission
+
+1. Fill in the placeholders: author names and affiliations, journal name in `\markboth`,
+   repository URL (two places).
+2. Every number in the text and tables comes from `paper_results/REPORT.md` / `RESULTS.md`.
+   If any run is redone, rebuild the report and the figures and re-check the numbers.
+3. References: titles, authors, venues and years were checked against the PDFs in `papers/` or
+   against the publisher/indexing pages. Still to confirm by hand:
+   - [moustafa2021toniot] article number 102994 is from a university listing; the DOI was not found.
+   - Page numbers taken from memory, not yet checked: McMahan et al. (pp. 1273–1282),
+     Cui et al. (pp. 9268–9277), Alsaedi et al. (pp. 165130–165150), Johnson & Khoshgoftaar (art. 27).
+   - Chang & Branco and Liu et al. are cited as arXiv preprints; if you want to cite their
+     journal versions, confirm venue/volume first.
+   - `papers/literature_review/apruzzese2022sok.pdf` is the wrong file (an unrelated maths paper),
+     so the Apruzzese SoK is not cited.
+   - `papers/manifest.csv` has wrong metadata for the base paper (DOI and authors), FedSTGCN
+     (first author) and Ngo et al. (article number); the paper uses the values printed in the PDFs.
+4. Optional strengthening for a Q1 venue (not done): a third independent testbed, a recent GNN-NIDS
+   baseline, FedProx, and a differential-privacy experiment.
