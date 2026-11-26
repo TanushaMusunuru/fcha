@@ -1,6 +1,6 @@
 """Figures for the FedFlow/FCHA paper, computed from paper_results/runs/*.results.jsonl.
 
-    py -3 papers/fedflow_paper/make_figures.py
+    py -3 papers/fedflow_paper_springer/make_figures.py
 """
 import collections
 import json

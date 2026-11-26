@@ -1,6 +1,6 @@
 # FedFlow: Flow-Conditioned Host Attention for federated IoT intrusion detection
 
-FedFlow replaces the experiment scripts in `archive/legacy_pipeline/kaggle_kernel_official_ablation/` (now legacy, see
+FedFlow replaces the earlier experiment scripts (now legacy and not part of this repository, see
 the last section). It fixes the problems found in the code review and adds the new model.
 
 ## The idea
@@ -138,6 +138,6 @@ unseen hosts, the paper's claim has to change.
 
 ## Legacy code
 
-`archive/legacy_pipeline/kaggle_kernel_official_ablation/` produced the numbers in the current paper. Those numbers
-should not be reported: the label leak was present in that code. The scripts are kept, patched,
-for reference only.
+The earlier pipeline produced the numbers in the first paper draft. Those numbers should not be
+reported: the label leak was present in that code. The legacy scripts are kept outside this
+repository, for reference only.

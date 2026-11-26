@@ -30,3 +30,28 @@ check_status.py
 # Large binaries and archives
 *.exe
 *.zip
+
+# Kept locally, not published: third-party paper PDFs, old paper drafts, legacy code
+archive/
+papers/base_paper/
+papers/community_detection/
+papers/core_methods/
+papers/datasets/
+papers/imbalance_and_evaluation/
+papers/literature_review/
+papers/loss_functions/
+papers/paper_latex/
+papers/fedflow_paper/
+papers/instructions.md
+papers/manifest.csv
+
+# Team coordination files and LaTeX build output
+TEAM_RUN.md
+dist/
+papers/fedflow_paper_springer/main.pdf
+papers/fedflow_paper_springer/figures/*.png
+*.aux
+*.bbl
+*.blg
+*.log
+*.out

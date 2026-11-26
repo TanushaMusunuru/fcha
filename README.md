@@ -18,8 +18,8 @@ federated feature standardisation from client moments, and model selection on cl
 | `configs/fedflow/paper/` | The paper protocol (`protocol.yaml`), one config per paper dataset, and the Kaggle grid settings |
 | `tests/test_fedflow.py` | 14 unit tests on synthetic data (leakage, splits, partitions, models, pipeline, report) |
 | `kaggle/fedflow_kaggle.py` | Single-notebook Kaggle entry point |
-| `papers/` | Paper sources (LaTeX) and reference material |
-| `archive/` | Earlier code and report tooling, kept for reference (see `archive/README.md`) |
+| `papers/fedflow_paper_springer/` | The paper (Springer Nature LaTeX template), its references, figures and compiled PDF |
+| `paper_results/` | Final report, LaTeX tables, figures and merged per-run results behind the paper |
 | `data/`, `results/` | Datasets and run outputs (not in git) |
 | `FEDFLOW.md` | Method, evaluation protocol and usage in detail |
 | `Q1_PLAN.md` | Paper claims, protocol, compute budget and outline |
